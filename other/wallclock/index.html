@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide Clock</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #000000;
+            background-image: url('https://raw.githubusercontent.com/notquitek3t/snippets/main/other/wallclock/bg.png');
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .clock-container {
+            display: flex;
+            gap: 5px;
+            font-size: 120px;
+            font-weight: 200;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .digit-container {
+            position: relative;
+            width: 80px;
+            height: auto;
+            overflow: visible;
+        }
+
+        .digit-column {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .digit-item {
+            width: 100%;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 120px;
+            font-weight: 200;
+            opacity: 0.3;
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .digit-item.active {
+            opacity: 1;
+        }
+
+        .separator {
+            width: 40px;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 120px;
+            font-weight: 200;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="clock-container">
+        <div class="digit-container">
+            <div class="digit-column" id="hour1"></div>
+        </div>
+        <div class="digit-container">
+            <div class="digit-column" id="hour2"></div>
+        </div>
+        <div class="separator">:</div>
+        <div class="digit-container">
+            <div class="digit-column" id="min1"></div>
+        </div>
+        <div class="digit-container">
+            <div class="digit-column" id="min2"></div>
+        </div>
+        <div class="separator">:</div>
+        <div class="digit-container">
+            <div class="digit-column" id="sec1"></div>
+        </div>
+        <div class="digit-container">
+            <div class="digit-column" id="sec2"></div>
+        </div>
+    </div>
+
+    <script>
+        class SlideDigit {
+            constructor(elementId, maxDigit) {
+                this.element = document.getElementById(elementId);
+                this.maxDigit = maxDigit;
+                this.currentValue = -1;
+                this.initialize();
+            }
+
+            initialize() {
+                // Create all possible digits in a vertical column
+                for (let i = 0; i <= this.maxDigit; i++) {
+                    const digitItem = document.createElement('div');
+                    digitItem.className = 'digit-item';
+                    digitItem.textContent = i;
+                    digitItem.dataset.value = i;
+                    this.element.appendChild(digitItem);
+                }
+            }
+
+            update(value) {
+                if (value === this.currentValue) return;
+                
+                this.currentValue = value;
+                
+                // Update active class for all digits
+                const allDigits = this.element.querySelectorAll('.digit-item');
+                allDigits.forEach(digit => {
+                    if (parseInt(digit.dataset.value) === value) {
+                        digit.classList.add('active');
+                    } else {
+                        digit.classList.remove('active');
+                    }
+                });
+                
+                // Calculate the transform to show the correct digit
+                const offset = -value * 120; // 120px is the height of each digit
+                this.element.style.transform = `translateY(${offset}px)`;
+            }
+        }
+
+        const digits = {
+            hour1: new SlideDigit('hour1', 2),
+            hour2: new SlideDigit('hour2', 9),
+            min1: new SlideDigit('min1', 5),
+            min2: new SlideDigit('min2', 9),
+            sec1: new SlideDigit('sec1', 5),
+            sec2: new SlideDigit('sec2', 9)
+        };
+
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+
+            digits.hour1.update(parseInt(hours[0]));
+            digits.hour2.update(parseInt(hours[1]));
+            digits.min1.update(parseInt(minutes[0]));
+            digits.min2.update(parseInt(minutes[1]));
+            digits.sec1.update(parseInt(seconds[0]));
+            digits.sec2.update(parseInt(seconds[1]));
+        }
+
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>
